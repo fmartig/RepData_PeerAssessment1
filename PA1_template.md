@@ -1,89 +1,73 @@
 # Reproducible Research: Peer Assessment 1
-###Introduction  
 
-The data used for this project comes from a personal activity monitoring device. It contains the number of steps taken in 5-minute intervals throughout the day by a single individual during two months in 2012.
-The compressed dataset can be downloaded from [here]((https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip)).
+
+####Introduction  
+
+The data used for this assignment comes from a personal activity monitoring device. It contains the number of steps taken in 5-minute intervals throughout the day by a single individual during two months in 2012.
+The compressed dataset can be downloaded from [here]((https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip)) or by forking/cloning [this Github repository](https://github.com/rdpeng/RepData_PeerAssessment1).  
 
 This project aims at answering the following questions:   
 - On average, how many steps does this individual take in one day?  
 - On average, at what time of the day is that person most active?  
 - Do they have different activity patterns on weekdays and weekends?  
 
+To do so, the programming language used was R (version 3.1.3) with OS X 10.7.5 as the operating system. This report was produced using RMarkdown and knitr in RStudio.
 
-### Loading and preprocessing the data 
+***
+#### Loading and preprocessing the data   
 
-The data are provided in a compressed file.   
+The data are provided in a zip file. After setting the working directory with `setwd()`, the following code was run to unzip the file and load the data.
 
-Loading the data:
-should I put code to download and unzip the file?
 
 ```r
-data<-read.csv("activity.csv") #other options such as stringsAsFactors=FALSE)
-summary(data)
+#the following code is cached so that it does not run every time the file is processed.
+unzip("activity.zip")
+data<-read.csv("activity.csv") #other options such as stringsAsFactor=FALSE are not necessary in this case
 ```
 
-```
-##      steps                date          interval     
-##  Min.   :  0.00   2012-10-01:  288   Min.   :   0.0  
-##  1st Qu.:  0.00   2012-10-02:  288   1st Qu.: 588.8  
-##  Median :  0.00   2012-10-03:  288   Median :1177.5  
-##  Mean   : 37.38   2012-10-04:  288   Mean   :1177.5  
-##  3rd Qu.: 12.00   2012-10-05:  288   3rd Qu.:1766.2  
-##  Max.   :806.00   2012-10-06:  288   Max.   :2355.0  
-##  NA's   :2304     (Other)   :15840
-```
-
+Two additional R packages are required to run the code:
 
 ```r
 library(dplyr)
 library(ggplot2)
 ```
 
-There is a problem with the original data: the intervals skip from 55 to 100, 155 to 200 etc., as a result there is a 45-min long interval at the end of each hour.
-There should only be 1440 min in 1 day, not 2355.
-So, with the code below, I make a new variable by creating the correct sequence of number from 0 to 1435 with an interval of 5.
+There is an oddity in the original data: at the end of each hour,the time intervals skip from 55 to 100, 155 to 200 etc. As a result if we want to use these intervals as indicators of time, there is a 45-min long interval at the end of each hour. There are 1440 min in one day. So, I chose to replace the "interval" variable by an "int" variable made of the sequence of numbers from 0 to 1435 with an interval of 5.
 
 
 ```r
 int<-seq(0,1435,by=5)
-activity<-cbind(data, int)
+activity<-cbind(data,int)
 activity<-select(activity, -interval)
 ```
 
-Convert the date variable from factors to dates
+The "date" variable is a factor and is converted into dates: 
 
 ```r
 activity$date<-as.Date(activity$date,"%Y-%m-%d")
 ```
 
+***
 
-### What is mean total number of steps taken per day?
+#### What is the mean total number of steps taken per day?
 
-Total number of steps taken each day:
+To compute the mean total number of steps taken each day, the data are grouped by date and then the function sum() is applied to the steps variable for each day:  
+
 
 ```r
 total_steps<-aggregate(steps~date,data=activity,FUN=sum)
 ```
-To adjust the number of breaks of the histogram, the range of the values is computed:
+
+To show the distribution of the data, a histogram of the number of steps taken in a day was plotted:
+
 
 ```r
-range(total_steps$steps)
+ggplot(total_steps, aes(steps))+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Histogram of the number of steps taken per day", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
 ```
 
-```
-## [1]    41 21194
-```
+![](PA1_template_files/figure-html/histogram-1.png) 
 
-Histogram to show the distribution of the data
-
-```r
-g<-ggplot(total_steps, aes(steps))
-g+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Total number of steps per day", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
-```
-
-<img src="PA1_template_files/figure-html/histogram-1.png" title="" alt="" style="display: block; margin: auto;" />
-
-Computation of the mean and median values of the total number of steps taken each day.  
+The mean and median values of the total number of steps taken each day was calculated. Missing values were ignored.
 
 
 ```r
@@ -92,10 +76,12 @@ med<-median(total_steps$steps, na.rm=TRUE)
 ```
 On average, 10766.19 steps were taken every day. The median value is 10765.00.  
 
+***
 
-### What is the average daily activity pattern?
+#### What is the average daily activity pattern?
 
-Compute the average number of steps taken par interval across all days:
+To determine the daily activity pattern, the average number of steps taken per interval across all days was computed. The following code groups the data by interval and compute the mean number of steps for each group of intervals.  
+
 
 ```r
 steps_by_interval<-aggregate(steps~int,data=activity,FUN=mean)
@@ -111,19 +97,22 @@ head(steps_by_interval)
 ## 5  20 0.0754717
 ## 6  25 2.0943396
 ```
-Plot time series
+
+The daily activity pattern is represented with ths time series plot:
+
 
 ```r
 ggplot(steps_by_interval, aes(int, steps))+geom_line()+labs(title="Average daily activity pattern", x="Time (min)",y="Average number of steps")+theme_gray(base_family="Times", base_size=10)+theme(plot.title=element_text(vjust=1.5))
 ```
 
-<img src="PA1_template_files/figure-html/timeseries-1.png" title="" alt="" style="display: block; margin: auto;" />
+![](PA1_template_files/figure-html/timeseries-1.png) 
 
-To determine the interval with the maximum activity
+To determine the interval with the maximum activity the following code was used:   
+
 
 ```r
-maxi<-max(steps_by_interval$steps)
-maxi_int<-steps_by_interval[steps_by_interval$steps==maxi,]
+maxi<-max(steps_by_interval$steps) #identify the maximum number of steps
+maxi_int<-steps_by_interval[steps_by_interval$steps==maxi,] #return the corresponding row
 print(maxi_int)
 ```
 
@@ -131,110 +120,93 @@ print(maxi_int)
 ##     int    steps
 ## 104 515 206.1698
 ```
-The time of the day with the maximum activity is the 515th interval, which corresponds to 8.35am. 
-That seems plausible: could correspond to the time when that person walks to work or school.
+The 5-minute interval with the maximum activity is the 515th interval, which corresponds to 8:35 to 8:40 am. 
 
-## Imputing missing values
+***
+
+#### Imputing missing values
+
+The use of the `summary()`function on the full dataset showed that the "steps" variable was the only variable with missing values.
+The following code creates a subset with only the rows containing NA values:
 
 
 ```r
 missing<-activity[is.na(activity),]
 nb<-nrow(missing)
 ```
-There are 2304 missing values. 
+There are 2304 missing values in the steps variable.
 
-To fill the missing values in the data set, the mean number of steps taken during each interval is used
+I chose to fill the missing values with the average number of steps corresponding to their interval.
 
-```r
-new_data<-merge(missing, steps_by_interval,"int")
-head(new_data)
-```
+Two intermediary datasets were used:  
+- the "missing" dataset, from the previous code chunk  
+- the "steps_by_interval" dataset, containing the mean number of steps for each interval.  
 
-```
-##   int steps.x       date  steps.y
-## 1   0      NA 2012-10-01 1.716981
-## 2   0      NA 2012-11-30 1.716981
-## 3   0      NA 2012-11-04 1.716981
-## 4   0      NA 2012-11-09 1.716981
-## 5   0      NA 2012-11-14 1.716981
-## 6   0      NA 2012-11-10 1.716981
-```
 
 ```r
-tail(new_data)
+new_data<-merge(missing, steps_by_interval,"int") #1 see below the explanation
+new_data<-select(new_data,-steps.x) #2
+new_data<-rename(new_data, steps=steps.y) #3
 ```
 
-```
-##       int steps.x       date  steps.y
-## 2299 1435      NA 2012-11-01 1.075472
-## 2300 1435      NA 2012-10-08 1.075472
-## 2301 1435      NA 2012-11-04 1.075472
-## 2302 1435      NA 2012-11-09 1.075472
-## 2303 1435      NA 2012-10-01 1.075472
-## 2304 1435      NA 2012-11-30 1.075472
-```
 
 ```r
-new_data<-select(new_data,-steps.x)
-new_data<-rename(new_data, steps=steps.y)
+complete<-filter(activity,!is.na(steps)) #4
+full_data<-rbind(complete,new_data) #5
+full_data<-arrange(full_data,date,int) #6
 ```
-Remove rows with NAs from activity, join that dataset with new_data
+1. Merge the missing dataset with step_by_interval. The interval variable is used for the merging, thus the mean value for each interval is added to the missing dataset.  
+2. Remove the cumbersome column. 
+3. Make sure that the new dataset has the right variables (the same as the main dataset)  
+4. Remove in the main dataset the rows with NA values.  
+5. Remake a full dataset: all the rows removed at the previous line are         replaced by new rows containing the mean values.  
+6. Order the new dataset by date and interval.    
+
+In the original dataset, the data for the first day are missing. Thus, looking at the head of the new dataset shows an exemple of what was done:
 
 ```r
-complete<-filter(activity,!is.na(steps))
-full_data<-rbind(complete,new_data)
-#order the rows based on the date and the interval:
-full_data<-arrange(full_data,date,int)
-#View the result
-full_data<-tbl_df(full_data)
-full_data
+head(full_data)
 ```
 
 ```
-## Source: local data frame [17,568 x 3]
-## 
-##        steps       date int
-## 1  1.7169811 2012-10-01   0
-## 2  0.3396226 2012-10-01   5
-## 3  0.1320755 2012-10-01  10
-## 4  0.1509434 2012-10-01  15
-## 5  0.0754717 2012-10-01  20
-## 6  2.0943396 2012-10-01  25
-## 7  0.5283019 2012-10-01  30
-## 8  0.8679245 2012-10-01  35
-## 9  0.0000000 2012-10-01  40
-## 10 1.4716981 2012-10-01  45
-## ..       ...        ... ...
+##       steps       date int
+## 1 1.7169811 2012-10-01   0
+## 2 0.3396226 2012-10-01   5
+## 3 0.1320755 2012-10-01  10
+## 4 0.1509434 2012-10-01  15
+## 5 0.0754717 2012-10-01  20
+## 6 2.0943396 2012-10-01  25
 ```
-Using this new full data set, make a histogram of the total number of steps taken each day
+
+The distribution of the filled dataset is displayed in the following histogram:  
+
 
 ```r
-#1. Compute the sum for each day
+#1. Compute the sum of steps for each day
 full_steps<-aggregate(steps~date,data=full_data,FUN=sum)
 
 #2. make the histogram
-ggplot(full_steps, aes(steps))+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Total number of steps per day", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
+ggplot(full_steps, aes(steps))+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Histogram of the number of steps taken per day", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
 ```
 
-<img src="PA1_template_files/figure-html/histogram2-1.png" title="" alt="" style="display: block; margin: auto;" />
+![](PA1_template_files/figure-html/histogram2-1.png) 
 
-Computation of the mean and median values of the total number of steps taken each day.  
+Computation of the mean and median values of the total number of steps taken each day: 
 
 
 ```r
 full_mean_step<-mean(full_steps$steps)
 full_med<-median(full_steps$steps)
 ```
-On average, 10766.19 steps were taken every day. The median value is 10766.19.    
+With the filled data, on average, 10766.19 steps were taken every day. The median value is 10766.19.    
 Comments: !!!!  
-doesn't change the mean(that's normal, I added mean values), slightly changes the distribution. Normal distribution?  
+  
+***
+#### Are there differences in activity patterns between weekdays and weekends?
 
-## Are there differences in activity patterns between weekdays and weekends?
+The dataset with the filled-in missing values was used for this part.
 
-For this part the `weekdays()` function may be of some help here. Use
-the dataset with the filled-in missing values for this part.
-
-Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+To compare the daily activity patterns on weekdays and weekends, the first step was to create a factor variable with these two levels.
 
 
 ```r
@@ -242,7 +214,7 @@ Create a new factor variable in the dataset with two levels -- "weekday" and "we
 
 full_data<-mutate(full_data,day=weekdays(date))
 
-#2. use a for loop with conditional statements to replace the names of days with weekday or weekend.
+#2. use a for loop with conditional statements to replace the names of days by "weekday"" or "weekend".
 
 for (i in 1:nrow(full_data)){
         if (full_data$day[i] %in% c("Monday","Tuesday","Wednesday","Thursday","Friday")){
@@ -252,12 +224,12 @@ for (i in 1:nrow(full_data)){
         }
 }
 
-#Class of the created variable: character. Next step: convert it into a factor variable
+#3. the created variable is a character variable. it has to be converted into a factor variable
 
 full_data<-mutate(full_data,day=factor(day))
 ```
 
-Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+These final data were grouped by two variables: the type of day and the interval and. The mean number of steps of the resulting groups was then calculated:  
 
 ```r
 full_steps<-full_data%>%
@@ -265,9 +237,10 @@ full_steps<-full_data%>%
         summarise(avg_steps=mean(steps))
 ```
 
+The comparison of activity patterns on weekdays and weekends is shown with the following time series panel plot:  
 
 ```r
 ggplot(full_steps, aes(int,avg_steps))+geom_line()+facet_grid(day~.)+theme_bw(base_family="Times", base_size=10)+labs(title="Comparison of the daily activity patterns on weekdays and weekends", x="Time(min)", y="Average number of steps")+ theme(plot.title=element_text(vjust=1.5), strip.text.y=element_text(size=12))
 ```
 
-<img src="PA1_template_files/figure-html/timeseries2-1.png" title="" alt="" style="display: block; margin: auto;" />
+![](PA1_template_files/figure-html/timeseries2-1.png) 
