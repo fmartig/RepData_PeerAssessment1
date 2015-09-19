@@ -58,7 +58,7 @@ total_steps<-aggregate(steps~date,data=activity,FUN=sum)
 
 To show the distribution of the data, a histogram of the number of steps taken in a day was plotted:
 
-```{r histogram}
+```{r histogram, fig.width=8, fig.height=5}
 ggplot(total_steps, aes(steps))+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Histogram of the number of steps taken per day", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
 ```
 
@@ -84,7 +84,7 @@ head(steps_by_interval)
 
 The daily activity pattern is represented with this time series plot:
 
-```{r timeseries}
+```{r timeseries, fig.width=8, fig.height=5}
 ggplot(steps_by_interval, aes(int, steps))+geom_line()+labs(title="Average daily activity pattern", x="Time (min)",y="Average number of steps")+theme_bw(base_family="Times", base_size=10)+theme(plot.title=element_text(vjust=1.5))
 ```
 
@@ -141,7 +141,7 @@ head(full_data)
 ```
 
 The distribution of the filled-in dataset is plotted with the following histogram:  
-```{r histogram2}
+```{r histogram2, fig.width=8, fig.height=5}
 #1. Compute the sum of steps for each day
 full_steps<-aggregate(steps~date,data=full_data,FUN=sum)
 
