@@ -1,17 +1,12 @@
----
-title: 'Reproducible Research: Peer Assessment 1'
-output:
-  html_document:
-    keep_md: yes
----
-
-
+##Reproducible Research: Peer Assessment 1
+==========================================
   
+    
     
 ####Introduction  
 
 The data used for this assignment were collected by a personal activity monitoring device. The dataset contains the number of steps taken in 5-minute intervals throughout the day by a single individual during two months in 2012.
-The compressed dataset can be downloaded from [here]((https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip)) or by forking/cloning [this Github repository](https://github.com/rdpeng/RepData_PeerAssessment1).  
+The compressed dataset can be downloaded from [here](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip). The method used in this case was to fork/clone [this Github repository](https://github.com/rdpeng/RepData_PeerAssessment1).  
 
 This project aims at understanding this person's walking habits and answering the following questions:   
 - On average, how many steps does this individual take in one day?  

@@ -1,17 +1,12 @@
----
-title: 'Reproducible Research: Peer Assessment 1'
-output:
-  html_document:
-    keep_md: yes
----
-
-
+##Reproducible Research: Peer Assessment 1
+==========================================
   
+    
     
 ####Introduction  
 
 The data used for this assignment were collected by a personal activity monitoring device. The dataset contains the number of steps taken in 5-minute intervals throughout the day by a single individual during two months in 2012.
-The compressed dataset can be downloaded from [here]((https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip)) or by forking/cloning [this Github repository](https://github.com/rdpeng/RepData_PeerAssessment1).  
+The compressed dataset can be downloaded from [here](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip). The method used in this case was to fork/clone [this Github repository](https://github.com/rdpeng/RepData_PeerAssessment1).  
 
 This project aims at understanding this person's walking habits and answering the following questions:   
 - On average, how many steps does this individual take in one day?  
@@ -63,7 +58,7 @@ total_steps<-aggregate(steps~date,data=activity,FUN=sum)
 
 To show the distribution of the data, a histogram of the number of steps taken in a day was plotted:
 
-```{r histogram, fig.height=4}
+```{r histogram}
 ggplot(total_steps, aes(steps))+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Histogram of the number of steps taken per day", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
 ```
 
@@ -89,7 +84,7 @@ head(steps_by_interval)
 
 The daily activity pattern is represented with this time series plot:
 
-```{r timeseries,fig.height=4}
+```{r timeseries}
 ggplot(steps_by_interval, aes(int, steps))+geom_line()+labs(title="Average daily activity pattern", x="Time (min)",y="Average number of steps")+theme_bw(base_family="Times", base_size=10)+theme(plot.title=element_text(vjust=1.5))
 ```
 
@@ -146,7 +141,7 @@ head(full_data)
 ```
 
 The distribution of the filled-in dataset is plotted with the following histogram:  
-```{r histogram2,fig.height=4}
+```{r histogram2}
 #1. Compute the sum of steps for each day
 full_steps<-aggregate(steps~date,data=full_data,FUN=sum)
 
