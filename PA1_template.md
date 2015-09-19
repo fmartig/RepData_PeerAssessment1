@@ -1,12 +1,19 @@
-# Reproducible Research: Peer Assessment 1
+---
+title: 'Reproducible Research: Peer Assessment 1'
+output:
+  html_document:
+    keep_md: yes
+---
 
 
+  
+    
 ####Introduction  
 
-The data used for this assignment comes from a personal activity monitoring device. It contains the number of steps taken in 5-minute intervals throughout the day by a single individual during two months in 2012.
+The data used for this assignment were collected by a personal activity monitoring device. The dataset contains the number of steps taken in 5-minute intervals throughout the day by a single individual during two months in 2012.
 The compressed dataset can be downloaded from [here]((https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip)) or by forking/cloning [this Github repository](https://github.com/rdpeng/RepData_PeerAssessment1).  
 
-This project aims at answering the following questions:   
+This project aims at understanding this person's walking habits and answering the following questions:   
 - On average, how many steps does this individual take in one day?  
 - On average, at what time of the day is that person most active?  
 - Do they have different activity patterns on weekdays and weekends?  
@@ -32,7 +39,7 @@ library(dplyr)
 library(ggplot2)
 ```
 
-There is an oddity in the original data: at the end of each hour,the time intervals skip from 55 to 100, 155 to 200 etc. As a result if we want to use these intervals as indicators of time, there is a 45-min long interval at the end of each hour. There are 1440 min in one day. So, I chose to replace the "interval" variable by an "int" variable made of the sequence of numbers from 0 to 1435 with an interval of 5.
+There is an oddity in the original data: at the end of each hour, the time intervals skip from 55 to 100, 155 to 200 etc. As a result if we want to use these intervals as indicators of time, there is a 45-min long interval at the end of each hour. There are 1440 min in one day. So, I chose to replace the "interval" variable by an "int" variable made of the sequence of numbers from 0 to 1435 with an interval of 5.
 
 
 ```r
@@ -41,17 +48,18 @@ activity<-cbind(data,int)
 activity<-select(activity, -interval)
 ```
 
-The "date" variable is a factor and is converted into dates: 
+The "date" variable is a factor and was converted into dates: 
 
 ```r
 activity$date<-as.Date(activity$date,"%Y-%m-%d")
 ```
 
+
 ***
 
 #### What is the mean total number of steps taken per day?
 
-To compute the mean total number of steps taken each day, the data are grouped by date and then the function sum() is applied to the steps variable for each day:  
+To compute the mean total number of steps taken each day, the data were grouped by date and then the function sum() got applied to the steps variable for each day:  
 
 
 ```r
@@ -65,9 +73,9 @@ To show the distribution of the data, a histogram of the number of steps taken i
 ggplot(total_steps, aes(steps))+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Histogram of the number of steps taken per day", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
 ```
 
-![](PA1_template_files/figure-html/histogram-1.png) 
+![plot of chunk histogram](figure/histogram-1.png) 
 
-The mean and median values of the total number of steps taken each day was calculated. Missing values were ignored.
+The mean and median values of the total number of steps taken each day were calculated. Missing values were ignored.
 
 
 ```r
@@ -75,6 +83,7 @@ mean_step<-mean(total_steps$steps, na.rm=TRUE)
 med<-median(total_steps$steps, na.rm=TRUE)
 ```
 On average, 10766.19 steps were taken every day. The median value is 10765.00.  
+
 
 ***
 
@@ -98,14 +107,14 @@ head(steps_by_interval)
 ## 6  25 2.0943396
 ```
 
-The daily activity pattern is represented with ths time series plot:
+The daily activity pattern is represented with this time series plot:
 
 
 ```r
-ggplot(steps_by_interval, aes(int, steps))+geom_line()+labs(title="Average daily activity pattern", x="Time (min)",y="Average number of steps")+theme_gray(base_family="Times", base_size=10)+theme(plot.title=element_text(vjust=1.5))
+ggplot(steps_by_interval, aes(int, steps))+geom_line()+labs(title="Average daily activity pattern", x="Time (min)",y="Average number of steps")+theme_bw(base_family="Times", base_size=10)+theme(plot.title=element_text(vjust=1.5))
 ```
 
-![](PA1_template_files/figure-html/timeseries-1.png) 
+![plot of chunk timeseries](figure/timeseries-1.png) 
 
 To determine the interval with the maximum activity the following code was used:   
 
@@ -120,23 +129,24 @@ print(maxi_int)
 ##     int    steps
 ## 104 515 206.1698
 ```
-The 5-minute interval with the maximum activity is the 515th interval, which corresponds to 8:35 to 8:40 am. 
+On average, the 5-minute interval with the maximum activity is the 515th interval, which corresponds to 8:35-8:40 am and about 206 steps. 
+
 
 ***
 
 #### Imputing missing values
 
 The use of the `summary()`function on the full dataset showed that the "steps" variable was the only variable with missing values.
-The following code creates a subset with only the rows containing NA values:
+The following code creates a subset with only the rows containing NA values. The number of rows in this dataset correspond to the number of missing values in the original dataset.
 
 
 ```r
 missing<-activity[is.na(activity),]
 nb<-nrow(missing)
 ```
-There are 2304 missing values in the steps variable.
+There are 2304 missing values in the steps variable, representing 13.1% of the data. 
 
-I chose to fill the missing values with the average number of steps corresponding to their interval.
+The choice was made to fill-in the missing values with the mean number of steps for the corresponding interval (ie the values calculated in the previous part). 
 
 Two intermediary datasets were used:  
 - the "missing" dataset, from the previous code chunk  
@@ -156,8 +166,8 @@ full_data<-rbind(complete,new_data) #5
 full_data<-arrange(full_data,date,int) #6
 ```
 1. Merge the missing dataset with step_by_interval. The interval variable is used for the merging, thus the mean value for each interval is added to the missing dataset.  
-2. Remove the cumbersome column. 
-3. Make sure that the new dataset has the right variables (the same as the main dataset)  
+2. Remove the extra column created. 
+3. Make sure that the new dataset has the right variable names (the same as the main dataset)  
 4. Remove in the main dataset the rows with NA values.  
 5. Remake a full dataset: all the rows removed at the previous line are         replaced by new rows containing the mean values.  
 6. Order the new dataset by date and interval.    
@@ -178,18 +188,17 @@ head(full_data)
 ## 6 2.0943396 2012-10-01  25
 ```
 
-The distribution of the filled dataset is displayed in the following histogram:  
-
+The distribution of the filled-in dataset is plotted with the following histogram:  
 
 ```r
 #1. Compute the sum of steps for each day
 full_steps<-aggregate(steps~date,data=full_data,FUN=sum)
 
-#2. make the histogram
+#2. plot the histogram
 ggplot(full_steps, aes(steps))+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Histogram of the number of steps taken per day", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
 ```
 
-![](PA1_template_files/figure-html/histogram2-1.png) 
+![plot of chunk histogram2](figure/histogram2-1.png) 
 
 Computation of the mean and median values of the total number of steps taken each day: 
 
@@ -198,8 +207,9 @@ Computation of the mean and median values of the total number of steps taken eac
 full_mean_step<-mean(full_steps$steps)
 full_med<-median(full_steps$steps)
 ```
-With the filled data, on average, 10766.19 steps were taken every day. The median value is 10766.19.    
-Comments: !!!!  
+With the filled data, on average, 10766.19 steps were taken every day. The median value is 10766.19, equal to the mean.   
+The mean total number of steps remained unchanged and the median was only slightly modified by filling-in data compared to the values for the original dataset where NAs were ignored. The distribution has become fully symetrical.  
+
   
 ***
 #### Are there differences in activity patterns between weekdays and weekends?
@@ -229,7 +239,7 @@ for (i in 1:nrow(full_data)){
 full_data<-mutate(full_data,day=factor(day))
 ```
 
-These final data were grouped by two variables: the type of day and the interval and. The mean number of steps of the resulting groups was then calculated:  
+These final data were grouped by two variables: the type of day and the interval. The mean number of steps of the resulting groups were then calculated:  
 
 ```r
 full_steps<-full_data%>%
@@ -243,4 +253,5 @@ The comparison of activity patterns on weekdays and weekends is shown with the f
 ggplot(full_steps, aes(int,avg_steps))+geom_line()+facet_grid(day~.)+theme_bw(base_family="Times", base_size=10)+labs(title="Comparison of the daily activity patterns on weekdays and weekends", x="Time(min)", y="Average number of steps")+ theme(plot.title=element_text(vjust=1.5), strip.text.y=element_text(size=12))
 ```
 
-![](PA1_template_files/figure-html/timeseries2-1.png) 
+![plot of chunk timeseries2](figure/timeseries2-1.png) 
+
