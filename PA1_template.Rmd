@@ -18,7 +18,7 @@ To do so, the programming language used was R (version 3.1.3) with OS X 10.7.5 a
 ***
 #### Loading and preprocessing the data   
 
-The data are provided in a zip file. After setting the working directory with `setwd()`, the following code was run to unzip the file and load the data.
+After setting the working directory with `setwd()`, the following code was run to unzip and load the data.
 
 ```{r,cache=TRUE}
 #the following code is cached so that it does not run every time the file is processed.
@@ -45,15 +45,20 @@ The "date" variable is a factor and was converted into dates:
 activity$date<-as.Date(activity$date,"%Y-%m-%d")
 ```
 
+The dataset on which the analysis was run is summarized below:
+```{r}
+summary(activity)
+```
 
 ***
 
 #### What is the mean total number of steps taken per day?
 
-To compute the mean total number of steps taken each day, the data were grouped by date and then the function sum() got applied to the steps variable for each day:  
+To compute the mean total number of steps taken each day, the data were grouped by date and then the sum() function was applied to the steps variable for each day. In this case, the missing values were ignored.  
 
 ```{r sum_by_day}
 total_steps<-aggregate(steps~date,data=activity,FUN=sum)
+#Note: by default, aggregate() ignores missing values
 ```
 
 To show the distribution of the data, a histogram of the number of steps taken in a day was plotted:
@@ -62,11 +67,13 @@ To show the distribution of the data, a histogram of the number of steps taken i
 ggplot(total_steps, aes(steps))+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Histogram of the number of steps taken per day", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
 ```
 
-The mean and median values of the total number of steps taken each day were calculated. Missing values were ignored.
+The mean and median values of the total number of steps taken each day were calculated. 
 
 ```{r mean_median}
 mean_step<-mean(total_steps$steps, na.rm=TRUE)
+mean_step
 med<-median(total_steps$steps, na.rm=TRUE)
+med
 ```
 On average, `r formatC(mean_step,digits=2, format="f")` steps were taken every day. The median value is `r formatC(med, digits=2, format="f")`.  
 
@@ -93,7 +100,7 @@ To determine the interval with the maximum activity the following code was used:
 ```{r max}
 maxi<-max(steps_by_interval$steps) #identify the maximum number of steps
 maxi_int<-steps_by_interval[steps_by_interval$steps==maxi,] #return the corresponding row
-print(maxi_int)
+maxi_int
 ```
 On average, the 5-minute interval with the maximum activity is the `r maxi_int[1,1]`th interval, which corresponds to 8:35-8:40 am and about `r formatC(maxi_int[1,2],digits=0,format="f")` steps. 
 
@@ -103,7 +110,7 @@ On average, the 5-minute interval with the maximum activity is the `r maxi_int[1
 #### Imputing missing values
 
 The use of the `summary()`function on the full dataset showed that the "steps" variable was the only variable with missing values.
-The following code creates a subset with only the rows containing NA values. The number of rows in this dataset correspond to the number of missing values in the original dataset.
+The following code creates a subset with only the rows containing NA values. The number of rows in this dataset correspond to the number of missing values in the original dataset. 
 
 ```{r na}
 missing<-activity[is.na(activity),]
@@ -111,7 +118,7 @@ nb<-nrow(missing)
 ```
 There are `r nb` missing values in the steps variable, representing `r formatC(nb*100/17568, digits=1, format="f")`% of the data. 
 
-The choice was made to fill-in the missing values with the mean number of steps for the corresponding interval (ie the values calculated in the previous part). 
+The choice was made to fill-in the missing values with the mean number of steps for the corresponding interval calculated across all days (ie the values calculated in the previous part). It is based on the assumption that this method, though imperfect, will not be too disruptive.
 
 Two intermediary datasets were used:  
 - the "missing" dataset, from the previous code chunk  
@@ -135,7 +142,7 @@ full_data<-arrange(full_data,date,int) #6
 5. Remake a full dataset: all the rows removed at the previous line are         replaced by new rows containing the mean values.  
 6. Order the new dataset by date and interval.    
 
-In the original dataset, the data for the first day are missing. Thus, looking at the head of the new dataset shows an exemple of what was done:
+In the original dataset, the data for the first day are missing. Thus, looking at the head of the new dataset shows an exemple of what was done for that first day:
 ```{r}
 head(full_data)
 ```
@@ -146,16 +153,18 @@ The distribution of the filled-in dataset is plotted with the following histogra
 full_steps<-aggregate(steps~date,data=full_data,FUN=sum)
 
 #2. plot the histogram
-ggplot(full_steps, aes(steps))+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Histogram of the number of steps taken per day", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
+ggplot(full_steps, aes(steps))+geom_histogram(fill="gray", color="darkgray", binwidth=350)+theme_bw(base_family="Times", base_size=10)+labs(title="Histogram of the number of steps taken per day \n (filled-in data)", x="Number of steps",y="Occurence")+theme(plot.title=element_text(vjust=1.5), axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=0.75))
 ```
 
 Computation of the mean and median values of the total number of steps taken each day: 
 
 ```{r mean_med2}
 full_mean_step<-mean(full_steps$steps)
+full_mean_step
 full_med<-median(full_steps$steps)
+full_med
 ```
-With the filled data, on average, `r formatC(full_mean_step,digits=2, format="f")` steps were taken every day. The median value is `r formatC(full_med,digits=2, format="f")`, equal to the mean.   
+With the filled-in data, on average, `r formatC(full_mean_step,digits=2, format="f")` steps were taken every day. The median value is `r formatC(full_med,digits=2, format="f")`, equal to the mean.   
 The mean total number of steps remained unchanged and the median was only slightly modified by filling-in data compared to the values for the original dataset where NAs were ignored. The distribution has become fully symetrical.  
 
   
@@ -197,4 +206,3 @@ The comparison of activity patterns on weekdays and weekends is shown with the f
 ```{r timeseries2}
 ggplot(full_steps, aes(int,avg_steps))+geom_line()+facet_grid(day~.)+theme_bw(base_family="Times", base_size=10)+labs(title="Comparison of the daily activity patterns on weekdays and weekends", x="Time(min)", y="Average number of steps")+ theme(plot.title=element_text(vjust=1.5), strip.text.y=element_text(size=12))
 ```
-
